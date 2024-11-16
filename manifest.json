@@ -1,0 +1,34 @@
+{
+    "manifest_version": 3,
+    "name": "Quick Modal Opener",
+    "version": "1.0",
+    "description": "カスタマイズ可能なモーダルウィンドウでウェブサイトを開く拡張機能",
+    "background": {
+        "service_worker": "background.js"
+      },
+      "permissions": [
+        "storage",
+        "activeTab",
+        "commands",
+        "scripting"
+      ],
+    "commands": {
+      "open-modal": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+M",
+          "mac": "Command+Shift+M"
+        },
+        "description": "モーダルを開く"
+      }
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "css": ["modal.css"]
+      }
+    ]
+  }
