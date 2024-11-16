@@ -123,11 +123,14 @@ function createModal(settings) {
       const width = originalWidth + (e.pageX - originalMouseX);
       const height = originalHeight + (e.pageY - originalMouseY);
       
-      // 最小サイズを設定
-      if (width > 200 && height > 200) {
-        modalContent.style.width = width + 'px';
-        modalContent.style.height = height + 'px';
-      }
+      const modalRect = modalContent.getBoundingClientRect();
+      const maxWidth = window.innerWidth - modalRect.left - 20;
+      const maxHeight = window.innerHeight - modalRect.top - 20;
+      const newWidth = Math.min(Math.max(200, width), maxWidth);
+      const newHeight = Math.min(Math.max(200, height), maxHeight);
+      
+      modalContent.style.width = newWidth + 'px';
+      modalContent.style.height = newHeight + 'px';
     }
   });
 
