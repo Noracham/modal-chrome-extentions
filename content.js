@@ -23,20 +23,56 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function createModal(settings) {
-  // モーダルコンテナを作成
+  // モーダルコンテナを作成、とりあえず初期位置真ん中
   modal = document.createElement('div');
   modal.className = 'quick-modal-container';
-  
+  modal.style.top = '50%'; 
+  modal.style.left = '50%';
+  modal.style.transform = 'translate(-50%, -50%)';
+
   // モーダルコンテンツを作成
   const modalContent = document.createElement('div');
   modalContent.className = 'quick-modal-content';
   modalContent.style.width = settings.width + 'px';
   modalContent.style.height = settings.height + 'px';
 
+  // ツールバーを作成
+  const toolbar = document.createElement('div');
+  toolbar.className = 'quick-modal-toolbar';
+  toolbar.style.cssText = `
+    width: 100%;
+    height: 30px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+  `;
+
+  // タイトルを作成
+  const title = document.createElement('div');
+  title.className = 'quick-modal-title';
+  title.textContent = 'Quick Modal';
+  title.style.cssText = `
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+  `;
+
   // 閉じるボタンを作成
   const closeBtn = document.createElement('button');
   closeBtn.className = 'quick-modal-close';
   closeBtn.innerHTML = '×';
+  closeBtn.style.cssText = `
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0 5px;
+  `;
   closeBtn.onclick = function() {
     modal.remove();
     modal = null;
@@ -46,17 +82,32 @@ function createModal(settings) {
   const resizeHandle = document.createElement('div');
   resizeHandle.className = 'quick-modal-resize-handle';
 
+  // ツールバーに要素を追加
+  toolbar.appendChild(title);
+  toolbar.appendChild(closeBtn);
+
+  // iframeのコンテナを作成
+  const iframeContainer = document.createElement('div');
+  iframeContainer.style.cssText = `
+    width: 100%;
+    height: calc(100% - 31px);
+    // overflow: auto;
+  `;
+
   // iframeを作成
   const iframe = document.createElement('iframe');
   iframe.src = settings.url;
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
+  iframe.style.cssText = `
+    width: 100%;
+    height: 100%;
+    border: none;
+  `;
 
   // モーダルを組み立て
-  modalContent.appendChild(closeBtn);
+  iframeContainer.appendChild(iframe);
+  modalContent.appendChild(toolbar);
+  modalContent.appendChild(iframeContainer);
   modalContent.appendChild(resizeHandle);
-  modalContent.appendChild(iframe);
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
 
@@ -72,12 +123,12 @@ function createModal(settings) {
   let xOffset = 0;
   let yOffset = 0;
 
-  modalContent.addEventListener('mousedown', dragStart);
+  toolbar.addEventListener('mousedown', dragStart);
   document.addEventListener('mousemove', drag);
   document.addEventListener('mouseup', dragEnd);
 
   function dragStart(e) {
-    if (e.target === closeBtn || e.target === iframe || e.target === resizeHandle) return;
+    if (e.target === closeBtn) return;
     initialX = e.clientX - xOffset;
     initialY = e.clientY - yOffset;
     isDragging = true;
@@ -99,7 +150,9 @@ function createModal(settings) {
   }
 
   function setTranslate(xPos, yPos, el) {
-    el.style.transform = `translate(${xPos}px, ${yPos}px)`;
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px))`;
   }
 
   // リサイズ機能の実装
